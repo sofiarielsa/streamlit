@@ -14,6 +14,7 @@ st.markdown(
                 color: white;
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-filter) {
+                width: 100%;
                 display: grid;
                 grid-template-columns: 40px auto 40px;
                 gap: 10px;
@@ -44,7 +45,8 @@ st.markdown(
                     width: 100%;
                 }
             }
-            div.stHorizontalBlock:has(>div>div>div>div>div>div>p>span#tombol-kiri-pilih-variabel) {
+            div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-variabel) {
+                width: 100%;
                 display: grid;
                 grid-template-columns: 40px auto 40px;
                 gap: 10px;
