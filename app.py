@@ -15,7 +15,7 @@ st.markdown(
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-filter) {
                 display: flex;
-                gap: 5px;
+                gap: 7px;
                 div.stButton > button {
                     width: 100%;
                     height: 40px;
@@ -47,7 +47,8 @@ st.markdown(
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-variabel) {
                 display: flex;
-                gap: 5px;
+                gap: 7px;
+                margin-bottom: -10px;
                 div.stButton > button {
                     width: 100%;
                     height: 40px;
@@ -98,7 +99,6 @@ st.markdown(
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#gambar) {
                 display: flex;
                 >div:nth-child(1) {
-                    background-color: black
                     width: 100%;
                 }
                 >div:nth-child(2) {
@@ -1252,10 +1252,10 @@ st.markdown("<div style='background-color: gray; color: white; width: 100%; bord
     <div style='width: 200px; background-color: white; color: gray; font-size: 40px; border-radius: 15px; text-align: center; font-weight: bold; padding: 0px;'>INFO</div> \
     <div style='margin-top: 10px; color: white; font-size: 23px;'> \
     <div style='margin-top: 12px; margin-bottom: 3px;'>Aplikasi EDA ini dibuat di Bandung, tanggal 17 Agustus 2025</div> \
-    <div><div style='display: inline-block; width:240px;'>Nama Pembuat</div> : &nbsp; <span style='font-weight: bold;'>Elsa Sofiari</span></div> \
-    <div><div style='display: inline-block; width:240px;'>Judul Proyek</div>  : &nbsp; Mini Project EDA (Exploratory Data Analysis)</div> \
-    <div><div style='display: inline-block; width:240px;'>Program Bootcamp</div> : &nbsp; Data Science For Beginner - Batch 13</div> \
-    <div><div style='display: inline-block; width:240px;'>Diselenggarakan oleh</div> : &nbsp; Intelligo.ID</div> \
+    <div style='display:flex'><div style='width:220px;'>Nama Pembuat</div><div>: &nbsp; </div><div><span style='font-weight: bold;'>Elsa Sofiari</span></div></div> \
+    <div style='display:flex'><div style='width:220px;'>Judul Proyek</div><div>: &nbsp; </div><div>Mini Project EDA (Exploratory Data Analysis)</div></div> \
+    <div style='display:flex'><div style='width:220px;'>Program Bootcamp</div><div>: &nbsp; </div><div>Data Science For Beginner - Batch 13</div></div> \
+    <div style='display:flex'><div style='width:220px;'>Diselenggarakan oleh</div><div>: &nbsp; </div><div>Intelligo.ID</div></div> \
     <div style='margin-top: 20px; text-align: right'><div style='display: inline-block; width:240px; height: 50px; background-color: white; border-radius: 8px;'>&nbsp;</div></div> \
     </div> \
     </div>", unsafe_allow_html=True)
