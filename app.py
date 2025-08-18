@@ -15,7 +15,7 @@ st.markdown(
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-filter) {
                 display: flex;
-                gap: 10px;
+                gap: 5px;
                 div.stButton > button {
                     width: 100%;
                     height: 40px;
@@ -46,10 +46,8 @@ st.markdown(
                 }
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-variabel) {
-                width: 100%;
-                display: grid;
-                grid-template-columns: 40px auto 40px;
-                gap: 10px;
+                display: flex;
+                gap: 5px;
                 div.stButton > button {
                     width: 100%;
                     height: 40px;
@@ -68,13 +66,15 @@ st.markdown(
                     font-weight: bold;
                 }
                 >div:nth-child(1) {
-                    width: 100%;
+                    min-width: 40px;
+                    max-width: 40px;
                 }
                 >div:nth-child(2) {
                     width: 100%;
                 }
                 >div:nth-child(3) {
-                    width: 100%;
+                    min-width: 40px;
+                    max-width: 40px;
                 }
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#left-panel) {
@@ -96,10 +96,14 @@ st.markdown(
                 }
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#gambar) {
-                display: grid;
-                grid-template-columns: auto 245px;
+                display: flex;
+                >div:nth-child(1) {
+                    background-color: black
+                    width: 100%;
+                }
                 >div:nth-child(2) {
                     min-width: 245px;
+                    max-width: 245px;
                     margin-top: -62px;
                 }
             }
