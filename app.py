@@ -34,13 +34,15 @@ st.markdown(
                     font-weight: bold;
                 }
                 >div:nth-child(1) {
-                    width: 40px;
+                    min-width: 40px;
+                    max-width: 40px;
                 }
                 >div:nth-child(2) {
                     width: 100%;
                 }
                 >div:nth-child(3) {
-                    width: 100%;
+                    min-width: 40px;
+                    max-width: 40px;
                 }
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-variabel) {
