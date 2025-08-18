@@ -13,7 +13,7 @@ st.markdown(
                 font-size: 23px;
                 color: white;
             }
-            div[data-testid="stHorizontalBlock"]:nth-child(2) {
+            div.stHorizontalBlock:nth-child(2) {
                 display: grid;
                 grid-template-columns: 40px auto 40px;
                 gap: 10px;
@@ -44,7 +44,7 @@ st.markdown(
                     width: 100%;
                 }
             }
-            div[data-testid="stHorizontalBlock"]:nth-child(3) {
+            div.stHorizontalBlock:nth-child(3) {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 20px;
@@ -62,7 +62,7 @@ st.markdown(
                     border-radius: 15px;
                 }
             }
-            div[data-testid="stHorizontalBlock"]:nth-child(5) {
+            div.stHorizontalBlock:nth-child(5) {
                 display: grid;
                 grid-template-columns: auto 245px;
                 >div:nth-child(2) {
