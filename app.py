@@ -13,7 +13,7 @@ st.markdown(
                 font-size: 23px;
                 color: white;
             }
-            div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-filter) {
+            div.stHorizontalBlock:has(>div>div>div>div>p>span#tombol-kiri-pilih-filter) {
                 display: grid;
                 grid-template-columns: 40px auto 40px;
                 gap: 10px;
