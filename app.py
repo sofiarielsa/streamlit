@@ -77,7 +77,7 @@ st.markdown(
                     width: 100%;
                 }
             }
-            div.stHorizontalBlock:has(>div>div>div>div>div>div>p>span#left-panel) {
+            div.stHorizontalBlock:has(>div>div>div>div>div>p>span#left-panel) {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 20px;
@@ -95,7 +95,7 @@ st.markdown(
                     border-radius: 15px;
                 }
             }
-            div.stHorizontalBlock:has(>div>div>div>div>div>div>p>span#gambar) {
+            div.stHorizontalBlock:has(>div>div>div>div>div>p>span#gambar) {
                 display: grid;
                 grid-template-columns: auto 245px;
                 >div:nth-child(2) {
