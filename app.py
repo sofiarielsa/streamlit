@@ -13,7 +13,38 @@ st.markdown(
                 font-size: 23px;
                 color: white;
             }
-            div.stHorizontalBlock:nth-child(2) {
+            div.stHorizontalBlock:has(>div>div>div>div>div>div>p>span#tombol-kiri-pilih-filter) {
+                display: grid;
+                grid-template-columns: 40px auto 40px;
+                gap: 10px;
+                div.stButton > button {
+                    width: 100%;
+                    height: 40px;
+                    background-color: #4CAF50;
+                    color: white;
+                    border-radius: 8px;    
+                    padding: 10px;
+                    div {
+                        font-size: 20px;
+                        font-weight: bold;
+                    }
+                }
+                div.stButton > button:hover {
+                    background-color: #398439;;
+                    color: white;
+                    font-weight: bold;
+                }
+                >div:nth-child(1) {
+                    width: 100%;
+                }
+                >div:nth-child(2) {
+                    width: 100%;
+                }
+                >div:nth-child(3) {
+                    width: 100%;
+                }
+            }
+            div.stHorizontalBlock:has(>div>div>div>div>div>div>p>span#tombol-kiri-pilih-variabel) {
                 display: grid;
                 grid-template-columns: 40px auto 40px;
                 gap: 10px;
@@ -44,25 +75,25 @@ st.markdown(
                     width: 100%;
                 }
             }
-            div.stHorizontalBlock:nth-child(3) {
+            div.stHorizontalBlock:has(>div>div>div>div>div>div>p>span#left-panel) {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 20px;
                 >div:first-child {
-                    min-width: 600px;
-                    max-width: 600px;
+                    min-width: 710px;
+                    max-width: 710px;
                     padding: 10px 20px 30px 20px;
                     background-color: darkgreen;
                     border-radius: 15px;
                 }
                 >div:nth-child(2) {
-                    min-width: 800px;
+                    min-width: 600px;
                     padding: 10px 20px 40px 20px;
                     background-color: salmon;
                     border-radius: 15px;
                 }
             }
-            div.stHorizontalBlock:nth-child(5) {
+            div.stHorizontalBlock:has(>div>div>div>div>div>div>p>span#gambar) {
                 display: grid;
                 grid-template-columns: auto 245px;
                 >div:nth-child(2) {
@@ -74,7 +105,7 @@ st.markdown(
                 margin-left: 10px;
                 margin-top: 10px;
                 margin-bottom: -10px;
-                width: 540px;
+                width: 650px;
             }
             div[data-baseweb="slider"] > div > div > div > div {
                 color: white;
@@ -116,9 +147,9 @@ title = \
         padding: 10px; 
         border-radius: 15px;
         font-size: 42px;
-        height: 80px;
+        min-height: 75px;
     '>
-        Customer Behavior and Shopping Habits 1
+        Customer Behavior and Shopping Habits
     </h1>
     """
 dataset = \
@@ -143,6 +174,17 @@ subset = \
         Subset
     </div>
     """
+pilih_filter = \
+    """
+    <div style='
+        margin-bottom: 6px;
+        font-size: 23px;
+        color: white;
+        text-align: center;
+    '>
+        Pilih Filter:
+    </div>
+    """
 pilih_variabel = \
     """
     <div style='
@@ -162,28 +204,51 @@ st.markdown(title, unsafe_allow_html=True)
 
 left, right = st.columns(2)
 with left:
+    st.markdown(pilih_filter, unsafe_allow_html=True)
+    list_pilihan = df.columns.to_list()[1:]
+    if "filter" not in st.session_state:
+        st.session_state["filter"] = list_pilihan[0]
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col1:
+        def prev_filter():
+            current_index = list_pilihan.index(st.session_state["filter"])
+            st.session_state["filter"] = list_pilihan[(current_index - 1) % len(list_pilihan)]
+        st.button("⮜", key="prev_filter_button", on_click=prev_filter)
+        st.markdown("<span id='tombol-kiri-pilih-filter' style='display:none;'></span>", unsafe_allow_html=True)
+    with col2:
+        filter = st.selectbox(
+            "",
+            list_pilihan,
+            label_visibility="collapsed",
+            key="filter"
+        )
+    with col3:
+        def next_filter():
+            current_index = list_pilihan.index(st.session_state["filter"])
+            st.session_state["filter"] = list_pilihan[(current_index + 1) % len(list_pilihan)]
+        st.button("⮞", key="next_filter_button", on_click=next_filter)
+
     min_usia, max_usia = int(df['Age'].min()), int(df['Age'].max())       
     if "range_slider" not in st.session_state:
         st.session_state["range_slider"] = (min_usia, max_usia)
     range_usia = st.slider(
         "Filter Usia:",
         min_usia, max_usia,
-        value=st.session_state["range_slider"],
         key="range_slider"
     )
 
-    genders = df['Gender'].dropna().unique().tolist()
-    if "genders" not in st.session_state:
-        st.session_state["genders"] = genders
-    filter_gender = st.multiselect(
+    default_gender = "Semua Gender"
+    genders = [default_gender, "Male", "Female"]
+    if "gender" not in st.session_state:
+        st.session_state["gender"] = default_gender
+    filter_gender = st.selectbox(
         "Filter Gender:",
         options=genders,
-        default=st.session_state["genders"],
-        key="genders"
+        key="gender"
     )
 
     locations = df['Location'].dropna().unique().tolist()
-    default_location = "Semua Negara Bagian"
+    default_location = "Semua Lokasi"
     locations.sort()
     locations.insert(0, default_location)
     if "location" not in st.session_state:
@@ -191,20 +256,31 @@ with left:
     filter_location = st.selectbox(
         "Filter Lokasi:",
         options=locations,
-        index=locations.index(st.session_state["location"]),
         key="location"
+    )
+
+    default_season = "Semua Musim"
+    seasons = [default_season, "Spring", "Summer", "Fall", "Winter"]
+    if "season" not in st.session_state:
+        st.session_state["season"] = default_season
+    filter_season = st.selectbox(
+        "Filter Musim:",
+        options=seasons,
+        key="season"
     )
 
     df_filter = df[
         (df['Age'].between(range_usia[0], range_usia[1])) &
-        (df['Gender'].isin(filter_gender)) &
-        ((filter_location == default_location) or (df['Location'] == filter_location))
+        ((filter_gender == default_gender) or (df['Gender'] == filter_gender)) &
+        ((filter_location == default_location) or (df['Location'] == filter_location)) &
+        ((filter_season == default_season) or (df['Season'] == filter_season))
     ]
 
     def reset_session():
         st.session_state["range_slider"] = (min_usia, max_usia)
-        st.session_state["genders"] = genders
+        st.session_state["genders"] = default_gender
         st.session_state["location"] = default_location
+        st.session_state["season"] = default_season
     st.button("Reset Filter", on_click=reset_session)
 
     if len(df_filter) != len(df):
@@ -216,6 +292,7 @@ with left:
     st.dataframe(df_filter, height=391)
     st.markdown(f"<div style='margin-top:-20px; padding: 0px 5px; color:white; font-size:20px; text-align:right;'> \
         <span style='color:{warna}; font-weight:bold;'>{len(df_filter)}</span> Transaksi</div>", unsafe_allow_html=True)
+    st.markdown("<span id='left-panel' style='display:none;'></span>", unsafe_allow_html=True)
 
 with right:
     st.markdown(pilih_variabel, unsafe_allow_html=True)
@@ -227,7 +304,8 @@ with right:
         def prev_variabel():
             current_index = list_pilihan.index(st.session_state["variabel"])
             st.session_state["variabel"] = list_pilihan[(current_index - 1) % len(list_pilihan)]
-        st.button("⮜", on_click=prev_variabel)
+        st.button("⮜", key="prev_variabel_button", on_click=prev_variabel)
+        st.markdown("<span id='tombol-kiri-pilih-variabel' style='display:none;'></span>", unsafe_allow_html=True)
     with col2:
         pilihan = st.selectbox(
             "",
@@ -239,7 +317,7 @@ with right:
         def next_variabel():
             current_index = list_pilihan.index(st.session_state["variabel"])
             st.session_state["variabel"] = list_pilihan[(current_index + 1) % len(list_pilihan)]
-        st.button("⮞", on_click=next_variabel)
+        st.button("⮞", key="next_variabel_button", on_click=next_variabel)
 
     if pilihan == "Age":
         min_age = df_filter["Age"].min()
@@ -288,9 +366,15 @@ with right:
         st.plotly_chart(fig, use_container_width=True)
 
     if pilihan == "Gender":
-        # Bar chart
         gender_counts = df_filter["Gender"].value_counts().reset_index()
         gender_counts.columns = ["Gender", "Jumlah Pelanggan"]
+        gender_dict_colors = {
+            "Male": "#3274A1",
+            "Female": "#E1812C"
+        }
+        gender_colors = list(map(lambda x:gender_dict_colors[x], gender_counts["Gender"].to_list()))
+
+        # Bar chart
         fig = px.bar(
             gender_counts,
             x="Gender",
@@ -304,7 +388,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#3274A1","#E1812C"]
+            marker_color=gender_colors
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -347,7 +431,7 @@ with right:
             hovertemplate="Gender: <b>%{label}</b><br>Persen: <b>%{percent}</b><extra></extra>",
             hoverlabel=dict(font_color="black", font_size=18),
             insidetextfont=dict(color="white", size=16),
-            marker=dict(colors=["#3274A1", "#E1812C"])
+            marker=dict(colors=gender_colors)
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -631,8 +715,15 @@ with right:
 
     if pilihan == "Season":
         season_order = ["Spring", "Summer", "Fall", "Winter"]
-        season_counts = df_filter["Season"].value_counts().reindex(season_order).reset_index()
+        season_counts = df_filter["Season"].value_counts().reindex(season_order).reset_index().dropna()
         season_counts.columns = ["Musim", "Frekuensi Pembelian"]
+        season_dict_colors = {
+            "Spring": "#E1812C",
+            "Summer": "#3A923A",
+            "Fall": "#C03D3E",
+            "Winter": "#3274A1"
+        }
+        season_colors = list(map(lambda x:season_dict_colors[x], season_counts["Musim"].to_list()))
         fig = px.bar(
             season_counts,
             x="Musim",
@@ -646,7 +737,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#E1812C","#3A923A", "#C03D3E", "#3274A1"]
+            marker_color=season_colors
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1154,7 +1245,7 @@ with right:
 st.markdown("<div style='background-color: gray; color: white; width: 100%; border-radius: 15px; padding: 20px;'> \
     <div style='width: 200px; background-color: white; color: gray; font-size: 40px; border-radius: 15px; text-align: center; font-weight: bold; padding: 0px;'>INFO</div> \
     <div style='margin-top: 10px; color: white; font-size: 23px;'> \
-    <div>Aplikasi EDA ini dibuat di Bandung, tanggal 17 Agustus 2025</div> \
+    <div style='margin-top: 12px; margin-bottom: 3px;'>Aplikasi EDA ini dibuat di Bandung, tanggal 17 Agustus 2025</div> \
     <div><div style='display: inline-block; width:240px;'>Nama Pembuat</div> : &nbsp; <span style='font-weight: bold;'>Elsa Sofiari</span></div> \
     <div><div style='display: inline-block; width:240px;'>Judul Proyek</div>  : &nbsp; Mini Project EDA (Exploratory Data Analysis)</div> \
     <div><div style='display: inline-block; width:240px;'>Program Bootcamp</div> : &nbsp; Data Science For Beginner - Batch 13</div> \
@@ -1166,6 +1257,7 @@ st.markdown("<div style='background-color: gray; color: white; width: 100%; bord
 footer_left, footer_right = st.columns(2)
 with footer_right:
     st.image("logo-intelligo-id.png")
+    st.markdown("<span id='gambar' style='display:none;'></span>", unsafe_allow_html=True)
 st.markdown("<div style='display: grid; grid-template-columns: auto 260px;'><div></div> \
     <a target='_blank' href='https://www.intelligo.id/' style='margin-top: -86px; width:240px; height: 50px; background-color: transparent; border-radius: 15px;'>&nbsp;</a></div>",
     unsafe_allow_html=True)
