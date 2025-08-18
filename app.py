@@ -14,7 +14,6 @@ st.markdown(
                 color: white;
             }
             div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-filter) {
-                width: 600px;
                 display: grid;
                 grid-template-columns: 40px auto 40px;
                 gap: 10px;
@@ -39,7 +38,7 @@ st.markdown(
                     width: 100%;
                 }
                 >div:nth-child(2) {
-                    width: 100%;
+                    width: 600px;
                 }
                 >div:nth-child(3) {
                     width: 100%;
