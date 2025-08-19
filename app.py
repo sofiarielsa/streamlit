@@ -127,7 +127,7 @@ st.markdown(
                 display: none;
             }
             div.stButton > button {
-                width: 100%;
+                width: 100% !important;
                 margin-top: -30px;
                 margin-bottom: 0px;
                 background-color: #4CAF50;
