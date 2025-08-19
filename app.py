@@ -126,8 +126,11 @@ st.markdown(
             div[data-testid="stSliderTickBarMax"], div[data-testid="stSliderTickBarMin"] {
                 display: none;
             }
+            div.stButton {
+                width: 100%;
+            }
             div.stButton > button {
-                width: 100% !important;
+                width: 100%;
                 margin-top: -30px;
                 margin-bottom: 0px;
                 background-color: #4CAF50;
