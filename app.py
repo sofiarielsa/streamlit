@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd 
 import plotly.express as px
 import math
+import json
+import os
 
 st.set_page_config(layout="wide")
 
@@ -10,13 +12,16 @@ st.markdown(
     """
         <style>
             label[data-testid="stWidgetLabel"] > div {
-                font-size: 23px;
+                font-size: 20px;
                 color: white;
+                text-align: center;
             }
-            div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-filter) {
+            div.stHorizontalBlock:has(>div>div>div>div>div>p>span#tombol-kiri-pilih-filter),
+            div.stHorizontalBlock:has(>div>div>div>div>div>p>span.tombol-kiri-detail-filter) {
                 display: flex;
                 gap: 7px;
                 div.stButton > button {
+                    margin-top: 0px;
                     width: 100%;
                     height: 40px;
                     background-color: #4CAF50;
@@ -50,6 +55,7 @@ st.markdown(
                 gap: 7px;
                 margin-bottom: -10px;
                 div.stButton > button {
+                    margin-top: 0px;
                     width: 100%;
                     height: 40px;
                     background-color: #FF4B4B;
@@ -85,13 +91,13 @@ st.markdown(
                 >div:first-child {
                     min-width: 710px;
                     max-width: 710px;
-                    padding: 10px 20px 30px 20px;
+                    padding: 10px 20px 00px 20px;
                     background-color: darkgreen;
                     border-radius: 15px;
                 }
                 >div:nth-child(2) {
                     min-width: 600px;
-                    padding: 10px 20px 40px 20px;
+                    padding: 10px 20px 20px 20px;
                     background-color: salmon;
                     border-radius: 15px;
                 }
@@ -110,7 +116,7 @@ st.markdown(
             div[data-baseweb="slider"] {
                 margin-left: 10px;
                 margin-top: 10px;
-                margin-bottom: -10px;
+                margin-bottom: 15px;
                 width: 650px;
             }
             div[data-baseweb="slider"] > div > div > div > div {
@@ -122,15 +128,14 @@ st.markdown(
             }
             div.stButton > button {
                 width: 100%;
-                # margin-top:5px;
-                margin-bottom:-10px;
+                margin-top: -30px;
+                margin-bottom: 0px;
                 background-color: #4CAF50;
                 color: white;
                 border-radius: 15px;    
-                padding: 10px 20px;
+                padding: 10px;
                 div {
                     font-size: 20px;
-                    font-weight: bold;
                 }
             }
             div.stButton > button:hover {
@@ -203,7 +208,7 @@ pilih_variabel = \
     </div>
     """
 
-# KODE
+# Kode
 df = pd.read_csv("shopping_trends.csv")
 
 st.markdown(title, unsafe_allow_html=True)
@@ -211,69 +216,160 @@ st.markdown(title, unsafe_allow_html=True)
 left, right = st.columns(2)
 with left:
     st.markdown(pilih_filter, unsafe_allow_html=True)
-    list_pilihan = df.columns.to_list()[1:]
+    default_filter_option = ""
+    filter_options = df.columns.to_list()
+    filter_options[0] = default_filter_option
+    active_filters = {}
+    for filter in filter_options[1:]:
+        active_filters[filter] = "Semua"
     if "filter" not in st.session_state:
-        st.session_state["filter"] = list_pilihan[0]
-    col1, col2, col3 = st.columns([1, 3, 1])
+        st.session_state["filter"] = default_filter_option
+    col1, col2, col3 = st.columns(3)
     with col1:
         def prev_filter():
-            current_index = list_pilihan.index(st.session_state["filter"])
-            st.session_state["filter"] = list_pilihan[(current_index - 1) % len(list_pilihan)]
+            current_index = filter_options.index(st.session_state["filter"])
+            st.session_state["filter"] = filter_options[(current_index - 1) % len(filter_options)]
         st.button("⮜", key="prev_filter_button", on_click=prev_filter)
         st.markdown("<span id='tombol-kiri-pilih-filter' style='display:none;'></span>", unsafe_allow_html=True)
     with col2:
         filter = st.selectbox(
             "",
-            list_pilihan,
+            filter_options,
             label_visibility="collapsed",
             key="filter"
         )
     with col3:
         def next_filter():
-            current_index = list_pilihan.index(st.session_state["filter"])
-            st.session_state["filter"] = list_pilihan[(current_index + 1) % len(list_pilihan)]
+            current_index = filter_options.index(st.session_state["filter"])
+            st.session_state["filter"] = filter_options[(current_index + 1) % len(filter_options)]
         st.button("⮞", key="next_filter_button", on_click=next_filter)
 
-    min_usia, max_usia = int(df['Age'].min()), int(df['Age'].max())       
+    if filter == default_filter_option:
+        placeholder = st.empty()
+    else:
+        filter_title = st.empty()
+        placeholder = st.empty()
+
+    min_usia, max_usia = int(df['Age'].min()), int(df['Age'].max())
     if "range_slider" not in st.session_state:
         st.session_state["range_slider"] = (min_usia, max_usia)
-    range_usia = st.slider(
-        "Filter Usia:",
-        min_usia, max_usia,
-        key="range_slider"
-    )
+        st.session_state["range_slider_temp"] = (min_usia, max_usia)
+    if filter == 'Age':
+        filter_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Tentukan Rentang Usia</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            range_usia = st.slider(
+                "Filter Usia:",
+                min_usia, max_usia,
+                value=st.session_state["range_slider"],
+                label_visibility="collapsed",
+            )
+            st.session_state["range_slider_temp"] = range_usia
+            active_filters['Age'] = f"{range_usia[0]} - {range_usia[1]}"
+            if active_filters['Age'] == f"{min_usia} - {max_usia}":
+                active_filters['Age'] = "Semua"
+    else:
+        st.session_state["range_slider"] = st.session_state["range_slider_temp"]
+        range_usia = st.session_state["range_slider"]
+        active_filters['Age'] = f"{range_usia[0]} - {range_usia[1]}"
+        if active_filters['Age'] == f"{min_usia} - {max_usia}":
+            active_filters['Age'] = "Semua"
 
-    default_gender = "Semua Gender"
+    default_gender = "Semua"
     genders = [default_gender, "Male", "Female"]
     if "gender" not in st.session_state:
         st.session_state["gender"] = default_gender
-    filter_gender = st.selectbox(
-        "Filter Gender:",
-        options=genders,
-        key="gender"
-    )
+        st.session_state["gender_temp"] = default_gender
+    old_gender = st.session_state["gender"]
+    if filter == 'Gender':
+        filter_title.markdown(f"<div style='margin-top: -25px; margin-bottom: 6px; font-size: 23px; color: white; text-align: center;'>Tentukan Gender</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            gender_col1, gender_col2, gender_col3 = st.columns(3)
+            with gender_col1:
+                def gender_prev_filter():
+                    gender_current_index = genders.index(st.session_state["gender_temp"])
+                    st.session_state["gender"] = genders[(gender_current_index - 1) % len(genders)]
+                st.button("⮜", key="gender_prev_filter_button", on_click=gender_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with gender_col2:
+                st.session_state['gender'] = old_gender
+                st.session_state['gender_temp'] = old_gender
+                filter_gender = st.selectbox(
+                    'Filter Gender:',
+                    options=genders,
+                    label_visibility="collapsed",
+                    key="gender"
+                )
+                st.session_state["gender_temp"] = filter_gender
+                active_filters['Gender'] = filter_gender
+            with gender_col3:
+                def gender_next_filter():
+                    gender_current_index = genders.index(st.session_state["gender_temp"])
+                    st.session_state["gender"] = genders[(gender_current_index + 1) % len(genders)]
+                st.button("⮞", key="gender_next_filter_button", on_click=gender_next_filter)
+    else:
+        st.session_state["gender"] = st.session_state["gender_temp"]
+        filter_gender = st.session_state["gender"]
+        active_filters['Gender'] = filter_gender
 
+    default_location = "Semua"
     locations = df['Location'].dropna().unique().tolist()
-    default_location = "Semua Lokasi"
     locations.sort()
     locations.insert(0, default_location)
     if "location" not in st.session_state:
         st.session_state["location"] = default_location
-    filter_location = st.selectbox(
-        "Filter Lokasi:",
-        options=locations,
-        key="location"
-    )
+        st.session_state["location_temp"] = default_location
+    old_location = st.session_state["location"]
+    if filter == 'Location':
+        filter_title.markdown(f"<div style='margin-top: -25px; margin-bottom: 6px; font-size: 23px; color: white; text-align: center;'>Tentukan Lokasi</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            location_col1, location_col2, location_col3 = st.columns(3)
+            with location_col1:
+                def location_prev_filter():
+                    location_current_index = locations.index(st.session_state["location_temp"])
+                    st.session_state["location"] = locations[(location_current_index - 1) % len(locations)]
+                st.button("⮜", key="location_prev_filter_button", on_click=location_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with location_col2:
+                st.session_state['location'] = old_location
+                st.session_state['location_temp'] = old_location
+                filter_location = st.selectbox(
+                    "Filter Lokasi:",
+                    options=locations,
+                    label_visibility="collapsed",
+                    key="location"
+                )
+                st.session_state["location_temp"] = filter_location
+                active_filters['Location'] = filter_location
+            with location_col3:
+                def location_next_filter():
+                    location_current_index = locations.index(st.session_state["location_temp"])
+                    st.session_state["location"] = locations[(location_current_index + 1) % len(locations)]
+                st.button("⮞", key="location_next_filter_button", on_click=location_next_filter)
+    else:
+        st.session_state["location"] = st.session_state["location_temp"]
+        filter_location = st.session_state["location"]
+        active_filters['Location'] = filter_location
 
-    default_season = "Semua Musim"
+    default_season = "Semua"
     seasons = [default_season, "Spring", "Summer", "Fall", "Winter"]
     if "season" not in st.session_state:
         st.session_state["season"] = default_season
-    filter_season = st.selectbox(
-        "Filter Musim:",
-        options=seasons,
-        key="season"
-    )
+        st.session_state["season_temp"] = default_season
+    if filter == 'Season':
+        filter_title.markdown(f"<div style='margin-top: -25px; margin-bottom: 6px; font-size: 23px; color: white; text-align: center;'>Tentukan Musim</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            filter_season = st.selectbox(
+                "Filter Musim:",
+                options=seasons,
+                index=seasons.index(st.session_state["season"]),
+                label_visibility="collapsed",
+            )
+            st.session_state["season_temp"] = filter_season
+            active_filters['Season'] = filter_season
+    else:
+        st.session_state["season"] = st.session_state["season_temp"]
+        filter_season = st.session_state["season"]
+        active_filters['Season'] = filter_season
 
     df_filter = df[
         (df['Age'].between(range_usia[0], range_usia[1])) &
@@ -282,22 +378,58 @@ with left:
         ((filter_season == default_season) or (df['Season'] == filter_season))
     ]
 
-    def reset_session():
-        st.session_state["range_slider"] = (min_usia, max_usia)
-        st.session_state["genders"] = default_gender
-        st.session_state["location"] = default_location
-        st.session_state["season"] = default_season
-    st.button("Reset Filter", on_click=reset_session)
+    # df_filter = df
+    # df_filter = df_filter[df_filter['Age'].between(range_usia[0], range_usia[1])]
+    # if (filter_gender != default_gender):
+    #     df_filter = df_filter[df_filter['Gender'] == filter_gender]
+
+    count_active_filters = len([filter for filter in active_filters if active_filters[filter] != "Semua"])
+    if count_active_filters:
+        
+        kolom_filter = []
+        kolom_nilai = []
+        for filter in active_filters:
+            if active_filters[filter] != "Semua":
+                kolom_filter.append(filter)
+                kolom_nilai.append(active_filters[filter])
+        tabel_filter = {
+            "Filter" : kolom_filter,
+            "Nilai" : kolom_nilai
+        }
+        st.markdown(f"<div style='margin-top: -20px; display: flex; justify-content: space-between;'> \
+            <div style='font-size: 29px; font-weight: bold; color: white'>Filter Diterapkan Pada Dataset</div> \
+            <div style='font-size: 23px; color: white; padding-top: 10px;' ><span style='color:yellow; font-weight:bold;'>{count_active_filters}</span> Filter</div> \
+            </div>", unsafe_allow_html=True)
+        df_table_filter = pd.DataFrame(tabel_filter)
+        df_table_filter.index = range(1, len(df_table_filter)+1)
+        st.dataframe(df_table_filter)
+
+        def reset_filter():
+            st.session_state["range_slider"] = (min_usia, max_usia)
+            st.session_state["range_slider_temp"] = (min_usia, max_usia)
+            st.session_state["gender"] = default_gender
+            st.session_state["gender_temp"] = default_gender
+            st.session_state["location"] = default_location
+            st.session_state["location_temp"] = default_location
+            st.session_state["season"] = default_season
+            st.session_state["season_temp"] = default_season
+            st.session_state["filter"] = filter_options[0]
+        st.button("Reset Filter", on_click=reset_filter)
+
+        st.markdown(f"<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
     if len(df_filter) != len(df):
-        st.markdown(subset, unsafe_allow_html=True)
+        teks = "Subset"
         warna = "yellow"
     else:
-        st.markdown(dataset, unsafe_allow_html=True)
+        teks = "Dataset"
         warna = "white"
-    st.dataframe(df_filter, height=391)
-    st.markdown(f"<div style='margin-top:-20px; padding: 0px 5px; color:white; font-size:20px; text-align:right;'> \
-        <span style='color:{warna}; font-weight:bold;'>{len(df_filter)}</span> Transaksi</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='margin-top: -20px; display: flex; justify-content: space-between;'> \
+        <div style='font-size: 29px; font-weight: bold; color: {warna}'>{teks}</div> \
+        <div style='font-size: 23px; color: white; padding-top: 10px;' ><span style='color:{warna}; font-weight:bold;'>{len(df_filter)}</span> Transaksi</div> \
+        </div>", unsafe_allow_html=True)
+    df_filter.index = range(1, len(df_filter)+1)
+    st.dataframe(df_filter)
     st.markdown("<span id='left-panel' style='display:none;'></span>", unsafe_allow_html=True)
 
 with right:
@@ -324,6 +456,10 @@ with right:
             current_index = list_pilihan.index(st.session_state["variabel"])
             st.session_state["variabel"] = list_pilihan[(current_index + 1) % len(list_pilihan)]
         st.button("⮞", key="next_variabel_button", on_click=next_variabel)
+
+    st.markdown(f"<div style='margin-top: -9px; display: flex; justify-content: space-between;'> \
+        <div style='font-size: 29px; font-weight: bold; color: white'>Visualisasi Data</div> \
+        </div>", unsafe_allow_html=True)
 
     if pilihan == "Age":
         min_age = df_filter["Age"].min()
