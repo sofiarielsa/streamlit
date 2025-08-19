@@ -127,7 +127,7 @@ st.markdown(
                 display: none;
             }
             div.stElementContainer {
-                width: 100% !impoertant;
+                width: 100% !important;
             }
             div.stButton > button {
                 width: 100%;
