@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd 
 import plotly.express as px
 import math
-import json
-import os
+import random
 
 st.set_page_config(layout="wide")
 
@@ -196,7 +195,7 @@ pilih_filter = \
         color: white;
         text-align: center;
     '>
-        Pilih Filter:
+        Pilihan Filter
     </div>
     """
 pilih_variabel = \
@@ -207,7 +206,7 @@ pilih_variabel = \
         color: white;
         text-align: center;
     '>
-        Pilih Variabel:
+        Pilihan Variabel
     </div>
     """
 
@@ -250,7 +249,7 @@ with left:
     if filter == default_filter_option:
         placeholder = st.empty()
     else:
-        filter_title = st.empty()
+        placeholder_title = st.empty()
         placeholder = st.empty()
 
     min_usia, max_usia = int(df['Age'].min()), int(df['Age'].max())
@@ -258,7 +257,7 @@ with left:
         st.session_state["range_slider"] = (min_usia, max_usia)
         st.session_state["range_slider_temp"] = (min_usia, max_usia)
     if filter == 'Age':
-        filter_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Tentukan Rentang Usia</div>", unsafe_allow_html=True)
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Rentang Usia Pelanggan:</div>", unsafe_allow_html=True)
         with placeholder.container():
             range_usia = st.slider(
                 "Filter Usia:",
@@ -284,7 +283,7 @@ with left:
         st.session_state["gender_temp"] = default_gender
     old_gender = st.session_state["gender"]
     if filter == 'Gender':
-        filter_title.markdown(f"<div style='margin-top: -25px; margin-bottom: 6px; font-size: 23px; color: white; text-align: center;'>Tentukan Gender</div>", unsafe_allow_html=True)
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Gender Pelanggan:</div>", unsafe_allow_html=True)
         with placeholder.container():
             gender_col1, gender_col2, gender_col3 = st.columns(3)
             with gender_col1:
@@ -314,6 +313,108 @@ with left:
         filter_gender = st.session_state["gender"]
         active_filters['Gender'] = filter_gender
 
+    default_item = "Semua"
+    items = df['Item Purchased'].dropna().unique().tolist()
+    items.sort()
+    items.insert(0, default_item)
+    if "item" not in st.session_state:
+        st.session_state["item"] = default_item
+        st.session_state["item_temp"] = default_item
+    old_item = st.session_state["item"]
+    if filter == 'Item Purchased':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Produk:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            item_col1, item_col2, item_col3 = st.columns(3)
+            with item_col1:
+                def item_prev_filter():
+                    item_current_index = items.index(st.session_state["item_temp"])
+                    st.session_state["item"] = items[(item_current_index - 1) % len(items)]
+                st.button("⮜", key="item_prev_filter_button", on_click=item_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with item_col2:
+                st.session_state['item'] = old_item
+                st.session_state['item_temp'] = old_item
+                filter_item = st.selectbox(
+                    "Filter Produk:",
+                    options=items,
+                    label_visibility="collapsed",
+                    key="item"
+                )
+                st.session_state["item_temp"] = filter_item
+                active_filters['Item Purchased'] = filter_item
+            with item_col3:
+                def item_next_filter():
+                    item_current_index = items.index(st.session_state["item_temp"])
+                    st.session_state["item"] = items[(item_current_index + 1) % len(items)]
+                st.button("⮞", key="item_next_filter_button", on_click=item_next_filter)
+    else:
+        st.session_state["item"] = st.session_state["item_temp"]
+        filter_item = st.session_state["item"]
+        active_filters['Item Purchased'] = filter_item
+
+    default_category = "Semua"
+    categories = df['Category'].dropna().unique().tolist()
+    categories.sort()
+    categories.insert(0, default_category)
+    if "category" not in st.session_state:
+        st.session_state["category"] = default_category
+        st.session_state["category_temp"] = default_category
+    old_category = st.session_state["category"]
+    if filter == 'Category':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Kategori Produk:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            category_col1, category_col2, category_col3 = st.columns(3)
+            with category_col1:
+                def category_prev_filter():
+                    category_current_index = categories.index(st.session_state["category_temp"])
+                    st.session_state["category"] = categories[(category_current_index - 1) % len(categories)]
+                st.button("⮜", key="category_prev_filter_button", on_click=category_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with category_col2:
+                st.session_state['category'] = old_category
+                st.session_state['category_temp'] = old_category
+                filter_category = st.selectbox(
+                    "Filter Kategori:",
+                    options=categories,
+                    label_visibility="collapsed",
+                    key="category"
+                )
+                st.session_state["category_temp"] = filter_category
+                active_filters['Category'] = filter_category
+            with category_col3:
+                def category_next_filter():
+                    category_current_index = categories.index(st.session_state["category_temp"])
+                    st.session_state["category"] = categories[(category_current_index + 1) % len(categories)]
+                st.button("⮞", key="category_next_filter_button", on_click=category_next_filter)
+    else:
+        st.session_state["category"] = st.session_state["category_temp"]
+        filter_category = st.session_state["category"]
+        active_filters['Category'] = filter_category
+
+    min_purchase, max_purchase = int(df['Purchase Amount (USD)'].min()), int(df['Purchase Amount (USD)'].max())
+    if "range_purchase" not in st.session_state:
+        st.session_state["range_purchase"] = (min_purchase, max_purchase)
+        st.session_state["range_purchase_temp"] = (min_purchase, max_purchase)
+    if filter == 'Purchase Amount (USD)':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Rentang Nilai Pembelian (USD):</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            range_purchase = st.slider(
+                "Filter Nilai Pembelian:",
+                min_purchase, max_purchase,
+                value=st.session_state["range_purchase"],
+                label_visibility="collapsed",
+            )
+            st.session_state["range_purchase_temp"] = range_purchase
+            active_filters['Purchase Amount (USD)'] = f"{range_purchase[0]} - {range_purchase[1]}"
+            if active_filters['Purchase Amount (USD)'] == f"{min_purchase} - {max_purchase}":
+                active_filters['Purchase Amount (USD)'] = "Semua"
+    else:
+        st.session_state["range_purchase"] = st.session_state["range_purchase_temp"]
+        range_purchase = st.session_state["range_purchase"]
+        active_filters['Purchase Amount (USD)'] = f"{range_purchase[0]} - {range_purchase[1]}"
+        if active_filters['Purchase Amount (USD)'] == f"{min_purchase} - {max_purchase}":
+            active_filters['Purchase Amount (USD)'] = "Semua"
+
     default_location = "Semua"
     locations = df['Location'].dropna().unique().tolist()
     locations.sort()
@@ -323,7 +424,7 @@ with left:
         st.session_state["location_temp"] = default_location
     old_location = st.session_state["location"]
     if filter == 'Location':
-        filter_title.markdown(f"<div style='margin-top: -25px; margin-bottom: 6px; font-size: 23px; color: white; text-align: center;'>Tentukan Lokasi</div>", unsafe_allow_html=True)
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Lokasi:</div>", unsafe_allow_html=True)
         with placeholder.container():
             location_col1, location_col2, location_col3 = st.columns(3)
             with location_col1:
@@ -353,38 +454,454 @@ with left:
         filter_location = st.session_state["location"]
         active_filters['Location'] = filter_location
 
+    default_size = "Semua"
+    sizes = [default_size, "S", "M", "L", "XL"]
+    if "size" not in st.session_state:
+        st.session_state["size"] = default_size
+        st.session_state["size_temp"] = default_size
+    old_size = st.session_state["size"]
+    if filter == 'Size':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Ukuran Produk:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            size_col1, size_col2, size_col3 = st.columns(3)
+            with size_col1:
+                def size_prev_filter():
+                    size_current_index = sizes.index(st.session_state["size_temp"])
+                    st.session_state["size"] = sizes[(size_current_index - 1) % len(sizes)]
+                st.button("⮜", key="size_prev_filter_button", on_click=size_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with size_col2:
+                st.session_state['size'] = old_size
+                st.session_state['size_temp'] = old_size
+                filter_size = st.selectbox(
+                    "Filter Ukuran:",
+                    options=sizes,
+                    label_visibility="collapsed",
+                    key="size"
+                )
+                st.session_state["size_temp"] = filter_size
+                active_filters['Size'] = filter_size
+            with size_col3:
+                def size_next_filter():
+                    size_current_index = sizes.index(st.session_state["size_temp"])
+                    st.session_state["size"] = sizes[(size_current_index + 1) % len(sizes)]
+                st.button("⮞", key="size_next_filter_button", on_click=size_next_filter)
+    else:
+        st.session_state["size"] = st.session_state["size_temp"]
+        filter_size = st.session_state["size"]
+        active_filters['Size'] = filter_size
+
+    default_color = "Semua"
+    colors = df['Color'].dropna().unique().tolist()
+    colors.sort()
+    colors.insert(0, default_color)
+    if "color" not in st.session_state:
+        st.session_state["color"] = default_color
+        st.session_state["color_temp"] = default_color
+    old_color = st.session_state["color"]
+    if filter == 'Color':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Warna Produk:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            color_col1, color_col2, color_col3 = st.columns(3)
+            with color_col1:
+                def color_prev_filter():
+                    color_current_index = colors.index(st.session_state["color_temp"])
+                    st.session_state["color"] = colors[(color_current_index - 1) % len(colors)]
+                st.button("⮜", key="color_prev_filter_button", on_click=color_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with color_col2:
+                st.session_state['color'] = old_color
+                st.session_state['color_temp'] = old_color
+                filter_color = st.selectbox(
+                    "Filter Warna:",
+                    options=colors,
+                    label_visibility="collapsed",
+                    key="color"
+                )
+                st.session_state["color_temp"] = filter_color
+                active_filters['Color'] = filter_color
+            with color_col3:
+                def color_next_filter():
+                    color_current_index = colors.index(st.session_state["color_temp"])
+                    st.session_state["color"] = colors[(color_current_index + 1) % len(colors)]
+                st.button("⮞", key="color_next_filter_button", on_click=color_next_filter)
+    else:
+        st.session_state["color"] = st.session_state["color_temp"]
+        filter_color = st.session_state["color"]
+        active_filters['Color'] = filter_color
+
     default_season = "Semua"
     seasons = [default_season, "Spring", "Summer", "Fall", "Winter"]
     if "season" not in st.session_state:
         st.session_state["season"] = default_season
         st.session_state["season_temp"] = default_season
+    old_season = st.session_state["season"]
     if filter == 'Season':
-        filter_title.markdown(f"<div style='margin-top: -25px; margin-bottom: 6px; font-size: 23px; color: white; text-align: center;'>Tentukan Musim</div>", unsafe_allow_html=True)
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Musim:</div>", unsafe_allow_html=True)
         with placeholder.container():
-            filter_season = st.selectbox(
-                "Filter Musim:",
-                options=seasons,
-                index=seasons.index(st.session_state["season"]),
-                label_visibility="collapsed",
-            )
-            st.session_state["season_temp"] = filter_season
-            active_filters['Season'] = filter_season
+            season_col1, season_col2, season_col3 = st.columns(3)
+            with season_col1:
+                def season_prev_filter():
+                    season_current_index = seasons.index(st.session_state["season_temp"])
+                    st.session_state["season"] = seasons[(season_current_index - 1) % len(seasons)]
+                st.button("⮜", key="season_prev_filter_button", on_click=season_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with season_col2:
+                st.session_state['season'] = old_season
+                st.session_state['season_temp'] = old_season
+                filter_season = st.selectbox(
+                    "Filter Musim:",
+                    options=seasons,
+                    label_visibility="collapsed",
+                    key="season"
+                )
+                st.session_state["season_temp"] = filter_season
+                active_filters['Season'] = filter_season
+            with season_col3:
+                def season_next_filter():
+                    season_current_index = seasons.index(st.session_state["season_temp"])
+                    st.session_state["season"] = seasons[(season_current_index + 1) % len(seasons)]
+                st.button("⮞", key="season_next_filter_button", on_click=season_next_filter)
     else:
         st.session_state["season"] = st.session_state["season_temp"]
         filter_season = st.session_state["season"]
         active_filters['Season'] = filter_season
 
+    min_rating, max_rating = float(df['Review Rating'].min()), float(df['Review Rating'].max())
+    if "range_rating" not in st.session_state:
+        st.session_state["range_rating"] = (min_rating, max_rating)
+        st.session_state["range_rating_temp"] = (min_rating, max_rating)
+    if filter == 'Review Rating':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Rentang Rating Produk:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            range_rating = st.slider(
+                "Filter Rating:",
+                min_rating, max_rating,
+                value=st.session_state["range_rating"],
+                label_visibility="collapsed",
+            )
+            st.session_state["range_rating_temp"] = range_rating
+            active_filters['Review Rating'] = f"{range_rating[0]} - {range_rating[1]}"
+            if active_filters['Review Rating'] == f"{min_rating} - {max_rating}":
+                active_filters['Review Rating'] = "Semua"
+    else:
+        st.session_state["range_rating"] = st.session_state["range_rating_temp"]
+        range_rating = st.session_state["range_rating"]
+        active_filters['Review Rating'] = f"{range_rating[0]} - {range_rating[1]}"
+        if active_filters['Review Rating'] == f"{min_rating} - {max_rating}":
+            active_filters['Review Rating'] = "Semua"
+
+    default_subscription = "Semua"
+    subscriptions = [default_subscription, "Yes", "No"]
+    if "subscription" not in st.session_state:
+        st.session_state["subscription"] = default_subscription
+        st.session_state["subscription_temp"] = default_subscription
+    old_subscription = st.session_state["subscription"]
+    if filter == 'Subscription Status':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Status Berlangganan:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            subscription_col1, subscription_col2, subscription_col3 = st.columns(3)
+            with subscription_col1:
+                def subscription_prev_filter():
+                    subscription_current_index = subscriptions.index(st.session_state["subscription_temp"])
+                    st.session_state["subscription"] = subscriptions[(subscription_current_index - 1) % len(subscriptions)]
+                st.button("⮜", key="subscription_prev_filter_button", on_click=subscription_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with subscription_col2:
+                st.session_state['subscription'] = old_subscription
+                st.session_state['subscription_temp'] = old_subscription
+                filter_subscription = st.selectbox(
+                    "Filter Status Berlangganan:",
+                    options=subscriptions,
+                    label_visibility="collapsed",
+                    key="subscription"
+                )
+                st.session_state["subscription_temp"] = filter_subscription
+                active_filters['Subscription Status'] = filter_subscription
+            with subscription_col3:
+                def subscription_next_filter():
+                    subscription_current_index = subscriptions.index(st.session_state["subscription_temp"])
+                    st.session_state["subscription"] = subscriptions[(subscription_current_index + 1) % len(subscriptions)]
+                st.button("⮞", key="subscription_next_filter_button", on_click=subscription_next_filter)
+    else:
+        st.session_state["subscription"] = st.session_state["subscription_temp"]
+        filter_subscription = st.session_state["subscription"]
+        active_filters['Subscription Status'] = filter_subscription
+
+    default_payment = "Semua"
+    payments = df['Payment Method'].dropna().unique().tolist()
+    payments.sort()
+    payments.insert(0, default_payment)
+    if "payment" not in st.session_state:
+        st.session_state["payment"] = default_payment
+        st.session_state["payment_temp"] = default_payment
+    old_payment = st.session_state["payment"]
+    if filter == 'Payment Method':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Metode Pembayaran:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            payment_col1, payment_col2, payment_col3 = st.columns(3)
+            with payment_col1:
+                def payment_prev_filter():
+                    payment_current_index = payments.index(st.session_state["payment_temp"])
+                    st.session_state["payment"] = payments[(payment_current_index - 1) % len(payments)]
+                st.button("⮜", key="payment_prev_filter_button", on_click=payment_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with payment_col2:
+                st.session_state['payment'] = old_payment
+                st.session_state['payment_temp'] = old_payment
+                filter_payment = st.selectbox(
+                    "Filter Metode Pembayaran:",
+                    options=payments,
+                    label_visibility="collapsed",
+                    key="payment"
+                )
+                st.session_state["payment_temp"] = filter_payment
+                active_filters['Payment Method'] = filter_payment
+            with payment_col3:
+                def payment_next_filter():
+                    payment_current_index = payments.index(st.session_state["payment_temp"])
+                    st.session_state["payment"] = payments[(payment_current_index + 1) % len(payments)]
+                st.button("⮞", key="payment_next_filter_button", on_click=payment_next_filter)
+    else:
+        st.session_state["payment"] = st.session_state["payment_temp"]
+        filter_payment = st.session_state["payment"]
+        active_filters['Payment Method'] = filter_payment
+
+    default_shipping = "Semua"
+    shippings = df['Shipping Type'].dropna().unique().tolist()
+    shippings.sort()
+    shippings.insert(0, default_shipping)
+    if "shipping" not in st.session_state:
+        st.session_state["shipping"] = default_shipping
+        st.session_state["shipping_temp"] = default_shipping
+    old_shipping = st.session_state["shipping"]
+    if filter == 'Shipping Type':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Jenis Pengiriman Produk:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            shipping_col1, shipping_col2, shipping_col3 = st.columns(3)
+            with shipping_col1:
+                def shipping_prev_filter():
+                    shipping_current_index = shippings.index(st.session_state["shipping_temp"])
+                    st.session_state["shipping"] = shippings[(shipping_current_index - 1) % len(shippings)]
+                st.button("⮜", key="shipping_prev_filter_button", on_click=shipping_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with shipping_col2:
+                st.session_state['shipping'] = old_shipping
+                st.session_state['shipping_temp'] = old_shipping
+                filter_shipping = st.selectbox(
+                    "Filter Jenis Pengiriman:",
+                    options=shippings,
+                    label_visibility="collapsed",
+                    key="shipping"
+                )
+                st.session_state["shipping_temp"] = filter_shipping
+                active_filters['Shipping Type'] = filter_shipping
+            with shipping_col3:
+                def shipping_next_filter():
+                    shipping_current_index = shippings.index(st.session_state["shipping_temp"])
+                    st.session_state["shipping"] = shippings[(shipping_current_index + 1) % len(shippings)]
+                st.button("⮞", key="shipping_next_filter_button", on_click=shipping_next_filter)
+    else:
+        st.session_state["shipping"] = st.session_state["shipping_temp"]
+        filter_shipping = st.session_state["shipping"]
+        active_filters['Shipping Type'] = filter_shipping
+
+    default_discount = "Semua"
+    discounts = [default_discount, "Yes", "No"]
+    if "discount" not in st.session_state:
+        st.session_state["discount"] = default_discount
+        st.session_state["discount_temp"] = default_discount
+    old_discount = st.session_state["discount"]
+    if filter == 'Discount Applied':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Diskon Diterapkan Pada Pembelian:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            discount_col1, discount_col2, discount_col3 = st.columns(3)
+            with discount_col1:
+                def discount_prev_filter():
+                    discount_current_index = discounts.index(st.session_state["discount_temp"])
+                    st.session_state["discount"] = discounts[(discount_current_index - 1) % len(discounts)]
+                st.button("⮜", key="discount_prev_filter_button", on_click=discount_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with discount_col2:
+                st.session_state['discount'] = old_discount
+                st.session_state['discount_temp'] = old_discount
+                filter_discount = st.selectbox(
+                    "Filter Diskon Diterapkan:",
+                    options=discounts,
+                    label_visibility="collapsed",
+                    key="discount"
+                )
+                st.session_state["discount_temp"] = filter_discount
+                active_filters['Discount Applied'] = filter_discount
+            with discount_col3:
+                def discount_next_filter():
+                    discount_current_index = discounts.index(st.session_state["discount_temp"])
+                    st.session_state["discount"] = discounts[(discount_current_index + 1) % len(discounts)]
+                st.button("⮞", key="discount_next_filter_button", on_click=discount_next_filter)
+    else:
+        st.session_state["discount"] = st.session_state["discount_temp"]
+        filter_discount = st.session_state["discount"]
+        active_filters['Discount Applied'] = filter_discount
+
+    default_promotion = "Semua"
+    promotions = [default_promotion, "Yes", "No"]
+    if "promotion" not in st.session_state:
+        st.session_state["promotion"] = default_promotion
+        st.session_state["promotion_temp"] = default_promotion
+    old_promotion = st.session_state["promotion"]
+    if filter == 'Promo Code Used':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Kode Promosi Digunakan Pada Pembelian:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            promotion_col1, promotion_col2, promotion_col3 = st.columns(3)
+            with promotion_col1:
+                def promotion_prev_filter():
+                    promotion_current_index = promotions.index(st.session_state["promotion_temp"])
+                    st.session_state["promotion"] = promotions[(promotion_current_index - 1) % len(promotions)]
+                st.button("⮜", key="promotion_prev_filter_button", on_click=promotion_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with promotion_col2:
+                st.session_state['promotion'] = old_promotion
+                st.session_state['promotion_temp'] = old_promotion
+                filter_promotion = st.selectbox(
+                    "Filter Kode Promosi Digunakan:",
+                    options=promotions,
+                    label_visibility="collapsed",
+                    key="promotion"
+                )
+                st.session_state["promotion_temp"] = filter_promotion
+                active_filters['Promo Code Used'] = filter_promotion
+            with promotion_col3:
+                def promotion_next_filter():
+                    promotion_current_index = promotions.index(st.session_state["promotion_temp"])
+                    st.session_state["promotion"] = promotions[(promotion_current_index + 1) % len(promotions)]
+                st.button("⮞", key="promotion_next_filter_button", on_click=promotion_next_filter)
+    else:
+        st.session_state["promotion"] = st.session_state["promotion_temp"]
+        filter_promotion = st.session_state["promotion"]
+        active_filters['Promo Code Used'] = filter_promotion
+
+    min_previous_purchase, max_previous_purchase = int(df['Previous Purchases'].min()), int(df['Previous Purchases'].max())
+    if "range_previous_purchase" not in st.session_state:
+        st.session_state["range_previous_purchase"] = (min_previous_purchase, max_previous_purchase)
+        st.session_state["range_previous_purchase_temp"] = (min_previous_purchase, max_previous_purchase)
+    if filter == 'Previous Purchases':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Rentang Jumlah Pembelian Pelanggan Sebelumnya:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            range_previous_purchase = st.slider(
+                "Filter Pembelian Sebelumnya:",
+                min_previous_purchase, max_previous_purchase,
+                value=st.session_state["range_previous_purchase"],
+                label_visibility="collapsed",
+            )
+            st.session_state["range_previous_purchase_temp"] = range_previous_purchase
+            active_filters['Previous Purchases'] = f"{range_previous_purchase[0]} - {range_previous_purchase[1]}"
+            if active_filters['Previous Purchases'] == f"{min_previous_purchase} - {max_previous_purchase}":
+                active_filters['Previous Purchases'] = "Semua"
+    else:
+        st.session_state["range_previous_purchase"] = st.session_state["range_previous_purchase_temp"]
+        range_previous_purchase = st.session_state["range_previous_purchase"]
+        active_filters['Previous Purchases'] = f"{range_previous_purchase[0]} - {range_previous_purchase[1]}"
+        if active_filters['Previous Purchases'] == f"{min_previous_purchase} - {max_previous_purchase}":
+            active_filters['Previous Purchases'] = "Semua"
+
+    default_preferred_payment = "Semua"
+    preferred_payments = df['Preferred Payment Method'].dropna().unique().tolist()
+    preferred_payments.sort()
+    preferred_payments.insert(0, default_preferred_payment)
+    if "preferred_payment" not in st.session_state:
+        st.session_state["preferred_payment"] = default_preferred_payment
+        st.session_state["preferred_payment_temp"] = default_preferred_payment
+    old_preferred_payment = st.session_state["preferred_payment"]
+    if filter == 'Preferred Payment Method':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Metode Pembayaran Yang Disukai Pelanggan:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            preferred_payment_col1, preferred_payment_col2, preferred_payment_col3 = st.columns(3)
+            with preferred_payment_col1:
+                def preferred_payment_prev_filter():
+                    preferred_payment_current_index = preferred_payments.index(st.session_state["preferred_payment_temp"])
+                    st.session_state["preferred_payment"] = preferred_payments[(preferred_payment_current_index - 1) % len(preferred_payments)]
+                st.button("⮜", key="preferred_payment_prev_filter_button", on_click=preferred_payment_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with preferred_payment_col2:
+                st.session_state['preferred_payment'] = old_preferred_payment
+                st.session_state['preferred_payment_temp'] = old_preferred_payment
+                filter_preferred_payment = st.selectbox(
+                    "Filter Metode Pembayaran Yang Disukai:",
+                    options=preferred_payments,
+                    label_visibility="collapsed",
+                    key="preferred_payment"
+                )
+                st.session_state["preferred_payment_temp"] = filter_preferred_payment
+                active_filters['Preferred Payment Method'] = filter_preferred_payment
+            with preferred_payment_col3:
+                def preferred_payment_next_filter():
+                    preferred_payment_current_index = preferred_payments.index(st.session_state["preferred_payment_temp"])
+                    st.session_state["preferred_payment"] = preferred_payments[(preferred_payment_current_index + 1) % len(preferred_payments)]
+                st.button("⮞", key="preferred_payment_next_filter_button", on_click=preferred_payment_next_filter)
+    else:
+        st.session_state["preferred_payment"] = st.session_state["preferred_payment_temp"]
+        filter_preferred_payment = st.session_state["preferred_payment"]
+        active_filters['Preferred Payment Method'] = filter_preferred_payment
+
+    default_frequency = "Semua"
+    frequencies = df['Frequency of Purchases'].dropna().unique().tolist()
+    frequencies.sort()
+    frequencies.insert(0, default_frequency)
+    if "frequency" not in st.session_state:
+        st.session_state["frequency"] = default_frequency
+        st.session_state["frequency_temp"] = default_frequency
+    old_frequency = st.session_state["frequency"]
+    if filter == 'Frequency of Purchases':
+        placeholder_title.markdown(f"<div style='margin-top: -25px; margin-bottom: -10px; font-size: 23px; color: white; text-align: center;'>Filter Frekuensi Pembelian Pelanggan:</div>", unsafe_allow_html=True)
+        with placeholder.container():
+            frequency_col1, frequency_col2, frequency_col3 = st.columns(3)
+            with frequency_col1:
+                def frequency_prev_filter():
+                    frequency_current_index = frequencies.index(st.session_state["frequency_temp"])
+                    st.session_state["frequency"] = frequencies[(frequency_current_index - 1) % len(frequencies)]
+                st.button("⮜", key="frequency_prev_filter_button", on_click=frequency_prev_filter)
+                st.markdown("<span class='tombol-kiri-detail-filter' style='display:none;'></span>", unsafe_allow_html=True)
+            with frequency_col2:
+                st.session_state['frequency'] = old_frequency
+                st.session_state['frequency_temp'] = old_frequency
+                filter_frequency = st.selectbox(
+                    "Filter Frekuensi Pembelian:",
+                    options=frequencies,
+                    label_visibility="collapsed",
+                    key="frequency"
+                )
+                st.session_state["frequency_temp"] = filter_frequency
+                active_filters['Frequnecy of Purchases'] = filter_frequency
+            with frequency_col3:
+                def frequency_next_filter():
+                    frequency_current_index = frequencies.index(st.session_state["frequency_temp"])
+                    st.session_state["frequency"] = frequencies[(frequency_current_index + 1) % len(frequencies)]
+                st.button("⮞", key="frequency_next_filter_button", on_click=frequency_next_filter)
+    else:
+        st.session_state["frequency"] = st.session_state["frequency_temp"]
+        filter_frequency = st.session_state["frequency"]
+        active_filters['Frequency of Purchases'] = filter_frequency
+
     df_filter = df[
         (df['Age'].between(range_usia[0], range_usia[1])) &
         ((filter_gender == default_gender) or (df['Gender'] == filter_gender)) &
+        ((filter_item == default_item) or (df['Item Purchased'] == filter_item)) &
+        ((filter_category == default_category) or (df['Category'] == filter_category)) &
+        (df['Purchase Amount (USD)'].between(range_purchase[0], range_purchase[1])) &
         ((filter_location == default_location) or (df['Location'] == filter_location)) &
-        ((filter_season == default_season) or (df['Season'] == filter_season))
+        ((filter_size == default_size) or (df['Size'] == filter_size)) &
+        ((filter_color == default_color) or (df['Color'] == filter_color)) &
+        ((filter_season == default_season) or (df['Season'] == filter_season)) &
+        (df['Review Rating'].between(range_rating[0], range_rating[1])) &
+        ((filter_subscription == default_subscription) or (df['Subscription Status'] == filter_subscription)) &
+        ((filter_payment == default_payment) or (df['Payment Method'] == filter_payment)) &
+        ((filter_shipping == default_shipping) or (df['Shipping Type'] == filter_shipping)) &
+        ((filter_discount == default_discount) or (df['Discount Applied'] == filter_discount)) &
+        ((filter_promotion == default_promotion) or (df['Promo Code Used'] == filter_promotion)) &
+        (df['Previous Purchases'].between(range_previous_purchase[0], range_previous_purchase[1])) &
+        ((filter_preferred_payment == default_preferred_payment) or (df['Preferred Payment Method'] == filter_preferred_payment)) &
+        ((filter_frequency == default_frequency) or (df['Frequency of Purchases'] == filter_frequency))
     ]
-
-    # df_filter = df
-    # df_filter = df_filter[df_filter['Age'].between(range_usia[0], range_usia[1])]
-    # if (filter_gender != default_gender):
-    #     df_filter = df_filter[df_filter['Gender'] == filter_gender]
 
     count_active_filters = len([filter for filter in active_filters if active_filters[filter] != "Semua"])
     if count_active_filters:
@@ -396,8 +913,8 @@ with left:
                 kolom_filter.append(filter)
                 kolom_nilai.append(active_filters[filter])
         tabel_filter = {
-            "Filter" : kolom_filter,
-            "Nilai" : kolom_nilai
+            "Variabel" : kolom_filter,
+            "Filter" : kolom_nilai
         }
         st.markdown(f"<div style='margin-top: -20px; display: flex; justify-content: space-between;'> \
             <div style='font-size: 29px; font-weight: bold; color: white'>Filter Diterapkan Pada Dataset</div> \
@@ -412,12 +929,40 @@ with left:
             st.session_state["range_slider_temp"] = (min_usia, max_usia)
             st.session_state["gender"] = default_gender
             st.session_state["gender_temp"] = default_gender
+            st.session_state["item"] = default_item
+            st.session_state["item_temp"] = default_item
+            st.session_state["category"] = default_category
+            st.session_state["category_temp"] = default_category
+            st.session_state["range_purchase"] = (min_purchase, max_purchase)
+            st.session_state["range_purchase_temp"] = (min_purchase, max_purchase)
             st.session_state["location"] = default_location
             st.session_state["location_temp"] = default_location
+            st.session_state["size"] = default_size
+            st.session_state["size_temp"] = default_size
+            st.session_state["color"] = default_color
+            st.session_state["color_temp"] = default_color
             st.session_state["season"] = default_season
             st.session_state["season_temp"] = default_season
-            st.session_state["filter"] = filter_options[0]
-        st.button("Reset Filter", on_click=reset_filter)
+            st.session_state["range_rating"] = (min_rating, max_rating)
+            st.session_state["range_rating_temp"] = (min_rating, max_rating)
+            st.session_state["subscription"] = default_subscription
+            st.session_state["subscription_temp"] = default_subscription
+            st.session_state["payment"] = default_payment
+            st.session_state["payment_temp"] = default_payment
+            st.session_state["shipping"] = default_shipping
+            st.session_state["shipping_temp"] = default_shipping
+            st.session_state["discount"] = default_discount
+            st.session_state["discount_temp"] = default_discount
+            st.session_state["promotion"] = default_discount
+            st.session_state["promotion_temp"] = default_discount
+            st.session_state["range_previous_purchase"] = (min_previous_purchase, max_previous_purchase)
+            st.session_state["range_previous_purchase_temp"] = (min_previous_purchase, max_previous_purchase)
+            st.session_state["preferred_payment"] = default_preferred_payment
+            st.session_state["preferred_payment_temp"] = default_preferred_payment
+            st.session_state["frequency"] = default_preferred_payment
+            st.session_state["frequency_temp"] = default_preferred_payment
+            st.session_state["filter"] = default_filter_option
+        st.button("Reset Filter", on_click=reset_filter) 
 
         st.markdown(f"<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
@@ -602,8 +1147,11 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#2EABB8", "#845B53", "#C03D3E", "#7F7F7F", "#E1812C", "#9372B2", "#3A923A", "#A9AA35", "#D684BD", "#3274A1"],
         )
+        if len(top_10_items) == 1:
+            fig.update_traces(marker_color=random.choice(["#2EABB8", "#845B53", "#C03D3E", "#7F7F7F", "#E1812C", "#9372B2", "#3A923A", "#A9AA35", "#D684BD", "#3274A1"]))
+        else:
+            fig.update_traces(marker_color=["#2EABB8", "#845B53", "#C03D3E", "#7F7F7F", "#E1812C", "#9372B2", "#3A923A", "#A9AA35", "#D684BD", "#3274A1"])
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
             xaxis_title="Frekuensi Pembelian",
@@ -633,6 +1181,13 @@ with right:
         top_categories = df_filter["Category"].value_counts()[::-1]
         df_categories = top_categories.reset_index()
         df_categories.columns = ["Kategori Produk", "Frekuensi Pembelian"]
+        category_dict_colors = {
+            "Accessories": "#C03D3E",
+            "Clothing": "#3274A1",
+            "Footwear": "#E1812C",
+            "Outerwear": "#3A923A"
+        }
+        category_colors = list(map(lambda x:category_dict_colors[x], df_categories["Kategori Produk"].to_list()))
         fig = px.bar(
             df_categories,
             x="Frekuensi Pembelian",
@@ -648,7 +1203,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#3a932a", "#E1812C", "#C03D3E", "#3274A1"],
+            marker_color=category_colors,
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -742,6 +1297,10 @@ with right:
             textposition="outside",
             marker_color=["#E1812C", "#A9AA35", "#845B53", "#3A923A", "#2EABB8", "#C03D3E", "#D684BD", "#7F7F7F", "#9372B2", "#3274A1"],
         )
+        if len(top_locations) == 1:
+            fig.update_traces(marker_color=random.choice(["#E1812C", "#A9AA35", "#845B53", "#3A923A", "#2EABB8", "#C03D3E", "#D684BD", "#7F7F7F", "#9372B2", "#3274A1"]))
+        else:
+            fig.update_traces(marker_color=["#E1812C", "#A9AA35", "#845B53", "#3A923A", "#2EABB8", "#C03D3E", "#D684BD", "#7F7F7F", "#9372B2", "#3274A1"])
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
             xaxis_title="Frekuensi Pembelian",
@@ -769,8 +1328,15 @@ with right:
 
     if pilihan == "Size":
         size_order = ["S", "M", "L", "XL"]
-        size_counts = df_filter["Size"].value_counts().reindex(size_order).reset_index()
+        size_counts = df_filter["Size"].value_counts().reindex(size_order).reset_index().dropna()
         size_counts.columns = ["Ukuran Produk", "Frekuensi Pembelian"]
+        size_dict_colors = {
+            "S": "#E1812C",
+            "M": "#3A923A",
+            "L": "#3274A1",
+            "XL": "#C03D3E"
+        }
+        size_colors = list(map(lambda x:size_dict_colors[x], size_counts["Ukuran Produk"].to_list()))
         fig = px.bar(
             size_counts,
             x="Ukuran Produk",
@@ -784,7 +1350,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#E1812C","#3A923A", "#3274A1", "#C03D3E"]
+            marker_color=size_colors
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -803,7 +1369,10 @@ with right:
                 )
             ]
         )
-        y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        try:
+            y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        except:
+            y_max = 0
         fig.update_xaxes(tickfont=dict(color="black", size=14))
         fig.update_yaxes(tickfont=dict(color="black", size=14), range=[0, y_max*1.15])
         if df_filter.empty:
@@ -813,9 +1382,37 @@ with right:
 
     if pilihan == "Color":
         top_10_colors = df_filter["Color"].value_counts().head(10)[::-1]
-        list_color = top_10_colors.index.to_list() 
+        list_color = top_10_colors.index.to_list()
         df_top10 = top_10_colors.reset_index()
         df_top10.columns = ["Warna Produk", "Frekuensi Pembelian"]
+        color_dict_colors = {
+            "Gold": "#FFD700",
+            "Brown": "#A52A2A",
+            "White": "#FFFFFF",
+            "Turquoise": "#40E0D0",
+            "Lavender": "#E6E6FA",
+            "Indigo": "#4B0082",
+            "Beige": "#F5F5DC",
+            "Red": "#FF0000",
+            "Peach": "#FFE5B4",
+            "Purple": "#800080",
+            "Magenta": "#FF00FF",
+            "Blue": "#0000FF",
+            "Pink": "#FFC0CB",
+            "Charcoal": "#36454F",
+            "Orange": "#FFA500",
+            "Maroon": "#800000",
+            "Gray": "#808080",
+            "Violet": "#EE82EE",
+            "Cyan": "#00FFFF",
+            "Black": "#000000",
+            "Green": "#008000",
+            "Teal": "#008080",
+            "Silver": "#C0C0C0",
+            "Yellow": "#FFFF00",
+            "Olive": "#808000",
+        }
+        color_colors = list(map(lambda x:color_dict_colors[x], df_top10["Warna Produk"].to_list()))
         fig = px.bar(
             df_top10,
             x="Frekuensi Pembelian",
@@ -831,7 +1428,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=list_color,
+            marker_color=color_colors,
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -901,7 +1498,10 @@ with right:
                 )
             ]
         )
-        y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        try:
+            y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        except:
+            y_max = 0
         fig.update_yaxes(range=[0, y_max*1.15])
         fig.update_xaxes(tickfont=dict(color="black", size=14))
         fig.update_yaxes(tickfont=dict(color="black", size=14))
@@ -919,11 +1519,6 @@ with right:
             max_rating = 0
         fig = px.histogram(df_filter, x="Review Rating", nbins=12, labels={"Review Rating": "Rating", "count": "Jumlah Produk"}, height=600, title="Distribusi Rating Produk") 
         fig.update_traces(
-            # xbins=dict(
-            #     start=min_rating,
-            #     end=max_rating,
-            #     size=0.5
-            # ),
             texttemplate="<b>%{y}</b>",
             hovertemplate="Rating: <b>%{x}</b><br>Jumlah Produk: <b>%{y}</b><extra></extra>",
             textfont=dict(color="gray", style="italic", size=12),
@@ -960,8 +1555,14 @@ with right:
 
     if pilihan == "Subscription Status":
         status_order = ["Yes", "No"]
-        status_counts = df_filter["Subscription Status"].value_counts().reindex(status_order).reset_index()
+        status_counts = df_filter["Subscription Status"].value_counts().reindex(status_order).reset_index().dropna()
         status_counts.columns = ["Status Berlangganan", "Jumlah Pelanggan"]
+        subscription_dict_colors = {
+            "Yes": "#3274A1",
+            "No": "#E1812C"
+        }
+        subscription_colors = list(map(lambda x:subscription_dict_colors[x], status_counts["Status Berlangganan"].to_list()))
+
         # Bar chart
         fig = px.bar(
             status_counts,
@@ -976,7 +1577,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#3274A1","#E1812C"]
+            marker_color=subscription_colors
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -995,7 +1596,10 @@ with right:
                 )
             ]
         )
-        y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        try:
+            y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        except:
+            y_max = 0
         fig.update_yaxes(range=[0, y_max*1.15])
         fig.update_xaxes(tickfont=dict(color="black", size=14))
         fig.update_yaxes(tickfont=dict(color="black", size=14))
@@ -1017,7 +1621,7 @@ with right:
             hovertemplate="Status Berlangganan: <b>%{label}</b><br>Persen: <b>%{percent}</b><extra></extra>",
             hoverlabel=dict(font_color="black", font_size=18),
             insidetextfont=dict(color="white", size=16),
-            marker=dict(colors=["#3274A1", "#E1812C"]),
+            marker=dict(colors=subscription_colors),
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1028,6 +1632,15 @@ with right:
         top_methods = df_filter["Payment Method"].value_counts()[::-1]
         df_methods = top_methods.reset_index()
         df_methods.columns = ["Metode Pembayaran", "Jumlah Transaksi"]
+        methods_dict_colors = {
+            "Credit Card": "#3274A1",
+            "Venmo": "#9372B2",
+            "Cash": "#3A923A",
+            "PayPal": "#C03D3E",
+            "Debit Card": "#845B53",
+            "Bank Transfer": "#E1812C"
+        }
+        methods_colors = list(map(lambda x:methods_dict_colors[x], df_methods["Metode Pembayaran"].to_list()))
         fig = px.bar(
             df_methods,
             x="Jumlah Transaksi",
@@ -1043,7 +1656,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#E1812C", "#845B53", "#C03D3E", "#3A923A", "#9372B2", "#3274A1"],
+            marker_color=methods_colors,
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1074,6 +1687,15 @@ with right:
         top_shippings = df_filter["Shipping Type"].value_counts()[::-1]
         df_shippings = top_shippings.reset_index()
         df_shippings.columns = ["Jenis Pengiriman", "Jumlah Transaksi"]
+        shippings_dict_colors = {
+            "Free Shipping": "#E1812C",
+            "Standard": "#C03D3E",
+            "Store Pickup": "#845B53",
+            "Next Day Air": "#3A923A",
+            "Express": "#3274A1",
+            "2-Day Shipping": "#9372B2"
+        }
+        shipping_colors = list(map(lambda x:shippings_dict_colors[x], df_shippings["Jenis Pengiriman"].to_list()))
         fig = px.bar(
             df_shippings,
             x="Jumlah Transaksi",
@@ -1089,7 +1711,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#9372B2", "#3274A1", "#3A923A", "#845B53", "#C03D3E", "#E1812C"],
+            marker_color=shipping_colors,
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1118,8 +1740,14 @@ with right:
 
     if pilihan == "Discount Applied":
         discounts_order = ["Yes", "No"]
-        discounts_counts = df_filter["Discount Applied"].value_counts().reindex(discounts_order).reset_index()
+        discounts_counts = df_filter["Discount Applied"].value_counts().reindex(discounts_order).reset_index().dropna()
         discounts_counts.columns = ["Diskon Diterapkan", "Frekuensi Pembelian"]
+        discounts_dict_colors = {
+            "Yes": "#3274A1",
+            "No": "#E1812C"
+        }
+        discount_colors = list(map(lambda x:discounts_dict_colors[x], discounts_counts["Diskon Diterapkan"].to_list()))
+
         # Bar chart
         fig = px.bar(
             discounts_counts,
@@ -1134,7 +1762,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#3274A1","#E1812C"]
+            marker_color=discount_colors
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1153,7 +1781,10 @@ with right:
                 )
             ]
         )
-        y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        try:
+            y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        except:
+            y_max = 0
         fig.update_yaxes(range=[0, y_max*1.15])
         fig.update_xaxes(tickfont=dict(color="black", size=14))
         fig.update_yaxes(tickfont=dict(color="black", size=14))
@@ -1175,7 +1806,7 @@ with right:
             hovertemplate="Diskon Diterapkan: <b>%{label}</b><br>Persen: <b>%{percent}</b><extra></extra>",
             hoverlabel=dict(font_color="black", font_size=18),
             insidetextfont=dict(color="white", size=16),
-            marker=dict(colors=["#3274A1", "#E1812C"]),
+            marker=dict(colors=discount_colors),
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1184,8 +1815,14 @@ with right:
 
     if pilihan == "Promo Code Used":
         promo_order = ["Yes", "No"]
-        promo_counts = df_filter["Promo Code Used"].value_counts().reindex(promo_order).reset_index()
+        promo_counts = df_filter["Promo Code Used"].value_counts().reindex(promo_order).reset_index().dropna()
         promo_counts.columns = ["Kode Promosi Digunakan", "Frekuensi Pembelian"]
+        promo_dict_colors = {
+            "Yes": "#3274A1",
+            "No": "#E1812C"
+        }
+        promo_colors = list(map(lambda x:promo_dict_colors[x], promo_counts["Kode Promosi Digunakan"].to_list()))
+
         # Bar chart
         fig = px.bar(
             promo_counts,
@@ -1200,7 +1837,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#3274A1","#E1812C"]
+            marker_color=promo_colors
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1219,7 +1856,10 @@ with right:
                 )
             ]
         )
-        y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        try:
+            y_max = max([max(trace.y) for trace in fig.data if hasattr(trace, "y")])
+        except:
+            y_max = 0
         fig.update_yaxes(range=[0, y_max*1.15])
         fig.update_xaxes(tickfont=dict(color="black", size=14))
         fig.update_yaxes(tickfont=dict(color="black", size=14))
@@ -1241,7 +1881,7 @@ with right:
             hovertemplate="Kode Promosi Digunakan: <b>%{label}</b><br>Persen: <b>%{percent}</b><extra></extra>",
             hoverlabel=dict(font_color="black", font_size=18),
             insidetextfont=dict(color="white", size=16),
-            marker=dict(colors=["#3274A1", "#E1812C"]),
+            marker=dict(colors=promo_colors),
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1249,18 +1889,18 @@ with right:
         st.plotly_chart(fig, use_container_width=True)
 
     if pilihan == "Previous Purchases":
-        min_purchase = df_filter["Previous Purchases"].min()
-        max_purchase = df_filter["Previous Purchases"].max() + 1
-        size_purchase = (max_purchase - min_purchase)//10
-        if (max_purchase - min_purchase)%10 > 0:
-            size_purchase = size_purchase + 1
+        min_pembelian = df_filter["Previous Purchases"].min()
+        max_pembelian = df_filter["Previous Purchases"].max() + 1
+        size_pembelian = (max_pembelian - min_pembelian)//10
+        if (max_pembelian - min_pembelian)%10 > 0:
+            size_pembelian = size_pembelian + 1
         fig = px.histogram(df_filter, x="Previous Purchases", labels={"Previous Purchases": "Jumlah Pembelian Sebelumnya",
             "count": "Jumlah Pelanggan"}, height=600, title="Distribusi Jumlah Pembelian Pelanggan Sebelumnya") 
         fig.update_traces(
             xbins=dict(
-                start=min_purchase,
-                end=max_purchase,
-                size=size_purchase
+                start=min_pembelian,
+                end=max_pembelian,
+                size=size_pembelian
             ),
             texttemplate="<b>%{y}</b>",
             hovertemplate="Jumlah Pembelian Sebelumnya: <b>%{x}</b><br>Jumlah Pelanggan: <b>%{y}</b><extra></extra>",
@@ -1288,7 +1928,7 @@ with right:
                 )
             ],
         )
-        fig.update_xaxes(tickfont=dict(color="black", size=14), range=[min_purchase-5, max_purchase+5])
+        fig.update_xaxes(tickfont=dict(color="black", size=14), range=[min_pembelian-5, max_pembelian+5])
         fig.update_yaxes(tickfont=dict(color="black", size=14))
         if df_filter.empty:
             fig.update_xaxes(range=[0, 10])
@@ -1299,6 +1939,15 @@ with right:
         top_methods = df_filter["Preferred Payment Method"].value_counts()[::-1]
         df_methods = top_methods.reset_index()
         df_methods.columns = ["Metode Pembayaran Yang Disukai", "Jumlah Pelanggan"]
+        methods_dict_colors = {
+            "PayPal": "#C03D3E",
+            "Credit Card": "#3A923A",
+            "Cash": "#E1812C",
+            "Debit Card": "#845B53",
+            "Venmo": "#3274A1",
+            "Bank Transfer": "#9372B2"
+        }
+        methods_colors = list(map(lambda x:methods_dict_colors[x], df_methods["Metode Pembayaran Yang Disukai"].to_list()))
         fig = px.bar(
             df_methods,
             x="Jumlah Pelanggan",
@@ -1314,7 +1963,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#9372B2", "#3274A1", "#845B53", "#E1812C", "#3A923A", "#C03D3E"],
+            marker_color=methods_colors,
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
@@ -1345,6 +1994,16 @@ with right:
         top_purchases = df_filter["Frequency of Purchases"].value_counts()[::-1]
         df_purchases = top_purchases.reset_index()
         df_purchases.columns = ["Frekuensi Pembelian", "Jumlah Pelanggan"]
+        purchases_dict_colors = {
+            "Every 3 Months": "#D684BD",
+            "Annually": "#3A923A",
+            "Quarterly": "#C03D3E",
+            "Monthly": "#C03D3E",
+            "Bi-Weekly": "#9372B2",
+            "Fortnightly": "#3274A1",
+            "Weekly": "#E1812C"
+        }
+        purchases_colors = list(map(lambda x:purchases_dict_colors[x], df_purchases["Frekuensi Pembelian"].to_list()))
         fig = px.bar(
             df_purchases,
             x="Jumlah Pelanggan",
@@ -1360,7 +2019,7 @@ with right:
             textfont=dict(color="gray", style="italic", size=12),
             hoverlabel=dict(font_color="black", font_size=18),
             textposition="outside",
-            marker_color=["#E1812C", "#3274A1", "#9372B2", "#845B53", "#C03D3E", "#3A923A", "#D684BD"],
+            marker_color=purchases_colors,
         )
         fig.update_layout(
             title=dict(x=0.5, xanchor="center", font=dict(size=30, color="black")),
